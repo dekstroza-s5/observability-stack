@@ -1,0 +1,27 @@
+groups:
+  - name: infrastructure
+    rules:
+      - alert: TargetDown
+        expr: up == 0
+        for: 2m
+        labels: {severity: critical}
+        annotations:
+          summary: "Target {{ $labels.instance }} is unavailable"
+      - alert: HighCPUUsage
+        expr: 100 - avg by(instance)(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100 > 85
+        for: 10m
+        labels: {severity: warning}
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+      - alert: LowAvailableMemory
+        expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes < 0.1
+        for: 10m
+        labels: {severity: warning}
+        annotations:
+          summary: "Less than 10% memory available"
+      - alert: FilesystemAlmostFull
+        expr: node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes < 0.1
+        for: 10m
+        labels: {severity: critical}
+        annotations:
+          summary: "Filesystem has less than 10% free space"
